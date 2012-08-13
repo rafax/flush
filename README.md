@@ -1,7 +1,7 @@
-flus
+flush
 ====
 
-FLask Url Shortener - an app to play with Flask and some other technologies
+FLask Url SHortener - an app to play with Flask and some other technologies
 
 Available endpoints:
 
