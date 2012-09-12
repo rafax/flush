@@ -29,3 +29,5 @@ pip-log.txt
 bin/*
 flush/*
 *.db
+venv
+*.pyc
