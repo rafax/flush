@@ -6,7 +6,7 @@ import urlparse
 import re
 from flask import Flask, send_from_directory, redirect
 from base62_converter import saturate, dehydrate
-from store import redis
+from store import urls, visits, redis
 app = Flask(__name__)
 
 
@@ -19,11 +19,11 @@ def favicon():
 
 @app.route("/<uid>")
 def get_url(uid):
-    url = redis.get('u:%s' % uid)
+    url = urls.get(uid)
     if url:
-        redis.incr('v:%s' % uid)
+        visits.incr(uid)
         fullurl = 'http://' +re.sub('\s*\:\/\/','',url)
-        print 'Redirecting to %s' %fullurl
+        print 'Redirecting to %s' % fullurl
         return redirect(fullurl)
     return "No such url %s !" % uid
 
@@ -32,16 +32,16 @@ def get_url(uid):
 def shorten(url):
     cnt = redis.incr('count')
     uid = dehydrate(cnt)
-    redis.set('u:%s' % uid, url)
+    urls.set(uid, url)
     return "Shortened to %s" % uid
 
 
 @app.route("/info/<uid>")
 def info(uid):
-    url = redis.get('u:%s' % uid)
-    visits = redis.get('v:%s' % uid)
-    if url and visits:
-        return "Url: %s visited %s times" % (url, visits)
+    url = urls.get(uid)
+    visit_count = visits.get(uid)
+    if url and visit_count:
+        return "Url: %s visited %s times" % (url, visit_count)
     return "No such url %s !" % uid
 
 if __name__ == "__main__":
