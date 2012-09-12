@@ -2,7 +2,9 @@ import os
 import cPickle
 import thread
 import copy
-from flask import Flask, send_from_directory
+import urlparse
+import re
+from flask import Flask, send_from_directory, redirect
 from base62_converter import saturate, dehydrate
 from store import redis
 app = Flask(__name__)
@@ -20,7 +22,9 @@ def get_url(uid):
     url = redis.get('u:%s' % uid)
     if url:
         redis.incr('v:%s' % uid)
-        return url
+        fullurl = 'http://' +re.sub('\s*\:\/\/','',url)
+        print 'Redirecting to %s' %fullurl
+        return redirect(fullurl)
     return "No such url %s !" % uid
 
 
