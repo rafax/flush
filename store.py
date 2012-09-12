@@ -3,17 +3,15 @@ import urlparse
 
 import redis
 
-url = urlparse.urlparse(
+_url = urlparse.urlparse(
     os.environ.get('REDISTOGO_URL', 'redis://127.0.0.1:6379'))
 
-redis = redis.StrictRedis(
-    host=url.hostname, port=url.port, db=0, password=url.password)
 
 
-class EntitySetWrapper(object):
+class _EntitySetWrapper(object):
     """docstring for Urls"""
     def __init__(self, format):
-        super(EntitySetWrapper, self).__init__()
+        super(_EntitySetWrapper, self).__init__()
         self.format = format
 
     def get(self, key):
@@ -25,5 +23,7 @@ class EntitySetWrapper(object):
     def incr(self, key):
         return redis.incr(self.format % key)
 
-urls = EntitySetWrapper("u:%s")
-visits = EntitySetWrapper("v:%s")
+redis = redis.StrictRedis(
+    host=_url.hostname, port=_url.port, db=0, password=_url.password)
+urls = _EntitySetWrapper("u:%s")
+visits = _EntitySetWrapper("v:%s")
