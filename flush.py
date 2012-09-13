@@ -10,7 +10,7 @@ from flask import Flask, send_from_directory, redirect, request, render_template
 from base62_converter import saturate, dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
-app.secret_key = os.environ.get('APP_SECRET', 'some-secret-key')
+app.secret_key = os.environ.get('APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
 
 
 @app.route("/<uid>")
@@ -59,7 +59,6 @@ def info(uid):
 def secret():
     url_keys = sorted(redis.keys('url:*'))
     urls = []
-    flash("Polpolpol to jest sekretne")
     for u in url_keys:
         url = redis.get(u)
         urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid':u.replace("url:",""), 'info_url': url_for('info', uid=u.replace("url:",""))})
@@ -74,8 +73,8 @@ def favicon():
 
 
 @app.route('/')
-def favicon():
-    return 'Welcome to flush, FLask based Url SHortener!'
+def home():
+    return render_template('home.html')
 
 
 @app.route('/mu-ec2f18e2-3a51503c-b31d1c19-e0f57a1a')
