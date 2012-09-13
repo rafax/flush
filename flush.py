@@ -6,7 +6,7 @@ import urlparse
 import json
 import re
 import datetime
-from flask import Flask, send_from_directory, redirect, request, render_template,url_for
+from flask import Flask, send_from_directory, redirect, request, render_template, url_for
 from base62_converter import saturate, dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
@@ -57,9 +57,11 @@ def info(uid):
 @app.route("/secret")
 def secret():
     url_keys = sorted(redis.keys('url:*'))
-    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a> <a href='%(info_url)s'>Info</a>" %
-                            {'key': u, 'url': to_full(redis.get(u)), 'info_url': url_for('info',uid=u.replace("url:",""))},url_keys)
-    return '<br />'.join(links)
+    urls = []
+    for u in url_keys:
+        url = redis.get(u) 
+        urls.append({'key': u, 'url':url, 'full_url': to_full(url), 'info_url': url_for('info', uid=u.replace("url:",""))})
+    return render_template('secret.html',urls=urls)
 
 
 @app.route('/favicon.ico')
