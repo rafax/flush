@@ -90,7 +90,7 @@ def blitz():
 
 
 def to_full(url):
-    return 'http://' + re.sub('\s*\:\/\/', '', url)
+    return 'http://' + re.sub('^\s*\:\/\/', '', url)
 
 if __name__ == "__main__":
     # Bind to PORT if defined, otherwise default to 5000.
