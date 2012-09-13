@@ -3,15 +3,22 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap-responsive.css') }}">
 <div class=page>
-  <h1>Flush</h1>
-  <div class=metanav>
- 
+  <div class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="/">flush</a>
+      <ul class="nav">
+        <li><a href="/secret">Secret</a></li>
+      </ul>
+    </div>
   </div>
   {% for message in get_flashed_messages() %}
-    <div class=flash>{{ message }}</div>
+  <div class="alert">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Warning!</strong> Best check yo self, you're not looking too good.
+  </div>
   {% endfor %}
   {% block body %}{% endblock %}
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
- {% block script %}{% endblock %}
+  <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+  {% block script %}{% endblock %}
 </div>

@@ -6,10 +6,11 @@ import urlparse
 import json
 import re
 import datetime
-from flask import Flask, send_from_directory, redirect, request, render_template, url_for
+from flask import Flask, send_from_directory, redirect, request, render_template, url_for,flash
 from base62_converter import saturate, dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
+app.secret_key = os.environ.get('APP_SECRET', 'some-secret-key')
 
 
 @app.route("/<uid>")
@@ -58,10 +59,11 @@ def info(uid):
 def secret():
     url_keys = sorted(redis.keys('url:*'))
     urls = []
+    flash("Polpolpol to jest sekretne")
     for u in url_keys:
-        url = redis.get(u) 
-        urls.append({'key': u, 'url':url, 'full_url': to_full(url), 'info_url': url_for('info', uid=u.replace("url:",""))})
-    return render_template('secret.html',urls=urls)
+        url = redis.get(u)
+        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid':u.replace("url:",""), 'info_url': url_for('info', uid=u.replace("url:",""))})
+    return render_template('secret.html', urls=urls)
 
 
 @app.route('/favicon.ico')
