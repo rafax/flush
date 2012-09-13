@@ -12,13 +12,6 @@ from store import urls, visits, redis
 app = Flask(__name__)
 
 
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
-
 @app.route("/<uid>")
 def get_url(uid):
     url = urls.get(uid)
@@ -66,6 +59,16 @@ def secret():
     url_keys = sorted(redis.keys('url:*'))
     links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a>" % {'key': u, 'url': to_full(redis.get(u))},url_keys)
     return '<br />'.join(links)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/mu-ec2f18e2-3a51503c-b31d1c19-e0f57a1a')
+def blitz():
+    return '42'
 
 
 def to_full(url):
