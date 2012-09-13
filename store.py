@@ -23,6 +23,12 @@ class _EntitySetWrapper(object):
     def incr(self, key):
         return redis.incr(self.format % key)
 
+    def exists(self, key):
+        return redis.exists(self.format % key)
+
+    def setnx(self, key, value):
+        return redis.setnx(self.format % key,value)
+
 redis = redis.StrictRedis(
     host=_url.hostname, port=_url.port, db=0, password=_url.password)
 urls = _EntitySetWrapper("url:%s")
