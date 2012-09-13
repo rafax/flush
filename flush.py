@@ -30,7 +30,8 @@ def get_url(uid):
                 'headers':list(request.headers),
                 'url':request.url,
                 'method':request.method,
-                'date':datetime.datetime.now().isoformat()
+                'date':datetime.datetime.now().isoformat(),
+                'ip': request.remote_addr
                 },
                 sort_keys=True, indent=4))
         fullurl = to_full(url)
