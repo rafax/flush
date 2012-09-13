@@ -1,7 +1,15 @@
 {% extends "layout.html" %} 
 {% block body %} 
 <div class="well">
-  <h1>Welcome to flush, FLask based Url SHortener!</h1>
+	<h2>Welcome to flush, FLask based Url SHortener!</h2>
+
+<form action="shorten" method="POST" class="form-inline">
+
+		<label>Url to shorten:</label><input type="text" name="url" value="{{url}}">
+		<label>Proposed short version (optional):</label><input type="text" name="proposed_name" value="{{proposed_name}}">
+		<input type="submit" name="submit" value="submit" class="btn">
+
+</form>
 </div>
 {% endblock %}
 

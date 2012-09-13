@@ -6,7 +6,7 @@ import urlparse
 import json
 import re
 import datetime
-from flask import Flask, send_from_directory, redirect, request, render_template, url_for,flash
+from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash,jsonify
 from base62_converter import saturate, dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
@@ -33,11 +33,18 @@ def get_url(uid):
         return redirect(fullurl)
     return "No such url %s !" % uid
 
-
-@app.route("/shorten/<url>")
-def shorten(url):
-    cnt = redis.incr('count')
-    uid = dehydrate(cnt)
+@app.route("/shorten", methods=['POST'])
+def shorten():
+    proposed_name = request.form['proposed_name']
+    url = request.form['url']
+    if proposed_name:
+        if not urls.setnx(proposed_name,'PLACEHOLDER'):
+            flash('Cannot shorten to %s'%proposed_name)
+            return render_template('home.html', url= url,proposed_name= proposed_name )
+        uid = proposed_name
+        redis.incr('count')
+    else:
+        uid = dehydrate(redis.incr('count'))
     urls.set(uid, url)
     return "Shortened to %s" % uid
 
@@ -61,7 +68,7 @@ def secret():
     urls = []
     for u in url_keys:
         url = redis.get(u)
-        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid':u.replace("url:",""), 'info_url': url_for('info', uid=u.replace("url:",""))})
+        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid': u.replace("url:",""), 'info_url': url_for('info', uid=u.replace("url:",""))})
     return render_template('secret.html', urls=urls)
 
 
