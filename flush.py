@@ -22,7 +22,7 @@ def get_url(uid):
     url = urls.get(uid)
     if url:
         visits.incr(uid)
-        fullurl = 'http://' +re.sub('\s*\:\/\/','',url)
+        fullurl = to_full(url)
         print 'Redirecting to %s' % fullurl
         return redirect(fullurl)
     return "No such url %s !" % uid
@@ -43,6 +43,9 @@ def info(uid):
     if url and visit_count:
         return "Url: %s visited %s times" % (url, visit_count)
     return "No such url %s !" % uid
+
+def to_full(url):
+    return 'http://' + re.sub('\s*\:\/\/', '', url)
 
 if __name__ == "__main__":
     # Bind to PORT if defined, otherwise default to 5000.
