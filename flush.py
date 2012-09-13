@@ -3,8 +3,10 @@ import cPickle
 import thread
 import copy
 import urlparse
+import json
 import re
-from flask import Flask, send_from_directory, redirect
+import datetime
+from flask import Flask, send_from_directory, redirect, request
 from base62_converter import saturate, dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
@@ -21,7 +23,16 @@ def favicon():
 def get_url(uid):
     url = urls.get(uid)
     if url:
-        visits.incr(uid)
+        cnt = visits.incr(uid)
+        redis.set("v:%s:%s" % (uid,cnt),
+            json.dumps({
+                'values':request.values,
+                'headers':list(request.headers),
+                'url':request.url,
+                'method':request.method,
+                'date':datetime.datetime.now().isoformat()
+                },
+                sort_keys=True, indent=4))
         fullurl = to_full(url)
         print 'Redirecting to %s' % fullurl
         return redirect(fullurl)
@@ -39,16 +50,20 @@ def shorten(url):
 @app.route("/info/<uid>")
 def info(uid):
     url = urls.get(uid)
-    visit_count = visits.get(uid)
-    if url and visit_count:
-        return "Url: %s visited %s times" % (url, visit_count)
+    if url:
+        visit_count = visits.get(uid)
+        ret = "Url: %s visited %s times" % (url, visit_count)
+        ret += "<br />"
+        visit_keys = redis.keys("v:%s:*" % uid)
+        ret += "<br />".join(map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4),visit_keys))
+        return ret
     return "No such url %s !" % uid
 
 
 @app.route("/secret")
 def secret():
     url_keys = sorted(redis.keys('url:*'))
-    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a>" % {'key': u,'url':to_full(redis.get(u))},url_keys)
+    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a>" % {'key': u, 'url': to_full(redis.get(u))},url_keys)
     return '<br />'.join(links)
 
 
