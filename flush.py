@@ -17,13 +17,13 @@ def get_url(uid):
     url = urls.get(uid)
     if url:
         cnt = visits.incr(uid)
-        redis.set("v:%s:%s" % (uid,cnt),
+        redis.set("v:%s:%s" % (uid, cnt),
             json.dumps({
-                'values':request.values,
-                'headers':list(request.headers),
-                'url':request.url,
-                'method':request.method,
-                'date':datetime.datetime.now().isoformat(),
+                'values': request.values,
+                'headers': list(request.headers),
+                'url': request.url,
+                'method': request.method,
+                'date': datetime.datetime.now().isoformat(),
                 'ip': request.remote_addr
                 },
                 sort_keys=True, indent=4))
@@ -49,7 +49,7 @@ def info(uid):
         ret = "Url: %s visited %s times" % (url, visit_count)
         ret += "<br />"
         visit_keys = redis.keys("v:%s:*" % uid)
-        ret += "<br />".join(map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4),visit_keys))
+        ret += "<br />".join(map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys))
         return ret
     return "No such url %s !" % uid
 
@@ -57,14 +57,21 @@ def info(uid):
 @app.route("/secret")
 def secret():
     url_keys = sorted(redis.keys('url:*'))
-    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a>" % {'key': u, 'url': to_full(redis.get(u))},url_keys)
+    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a> <a href='info/%(uid)s'>Info</a>" %
+                            {'key': u, 'url': to_full(redis.get(u)), 'uid':u.replace("url:","")},url_keys)
     return '<br />'.join(links)
+
 
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(
         os.path.join(app.root_path, 'static'),
         'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/')
+def favicon():
+    return 'Welcome to flush, FLask based Url SHortener!'
+
 
 @app.route('/mu-ec2f18e2-3a51503c-b31d1c19-e0f57a1a')
 def blitz():
