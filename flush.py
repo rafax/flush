@@ -44,10 +44,18 @@ def info(uid):
         return "Url: %s visited %s times" % (url, visit_count)
     return "No such url %s !" % uid
 
+
+@app.route("/secret")
+def secret():
+    url_keys = sorted(redis.keys('url:*'))
+    links = map(lambda u: "%(key)s => <a href='%(url)s'> %(url)s</a>" % {'key': u,'url':to_full(redis.get(u))},url_keys)
+    return '<br />'.join(links)
+
+
 def to_full(url):
     return 'http://' + re.sub('\s*\:\/\/', '', url)
 
 if __name__ == "__main__":
     # Bind to PORT if defined, otherwise default to 5000.
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port,debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)
