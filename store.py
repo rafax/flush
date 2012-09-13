@@ -25,5 +25,5 @@ class _EntitySetWrapper(object):
 
 redis = redis.StrictRedis(
     host=_url.hostname, port=_url.port, db=0, password=_url.password)
-urls = _EntitySetWrapper("u:%s")
+urls = _EntitySetWrapper("url:%s")
 visits = _EntitySetWrapper("v:%s")
