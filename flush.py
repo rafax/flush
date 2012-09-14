@@ -29,7 +29,6 @@ def get_url(uid):
                 },
                 sort_keys=True, indent=4))
         fullurl = to_full(url)
-        print 'Redirecting to %s' % fullurl
         return redirect(fullurl)
     return "No such url %s !" % uid
 
