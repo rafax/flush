@@ -37,26 +37,25 @@ def shorten():
     if proposed_name:
         if not urls.setnx(proposed_name, 'PLACEHOLDER'):
             flash('Cannot shorten to %s' % proposed_name)
-            return render_template('home.html', url= url, proposed_name= proposed_name )
+            return render_template('home.html', url= url, proposed_name= proposed_name)
         uid = proposed_name
         redis.incr('count')
     else:
         uid = dehydrate(redis.incr('count'))
     urls.set(uid, url)
     flash("Shortened to %s" % uid)
-    return redirect(url_for('info',uid=uid))
+    return redirect(url_for('info', uid=uid))
+
 
 @app.route("/info/<uid>")
 def info(uid):
     url = urls.get(uid)
     if url:
         visit_count = visits.get(uid)
-        ret = "Url: %s visited %s times" % (url, visit_count)
-        ret += "<br />"
         visit_keys = redis.keys("v:%s:*" % uid)
-        ret += "<br />".join(
-            map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys))
-        return ret
+        visits_json = map(lambda k: json.dumps(
+            json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys)
+        return render_template('info.html', url=url,full_url=to_full(url), visit_count=visit_count, visits = visits_json)
     return "No such url %s !" % uid
 
 
