@@ -1,1 +1,1 @@
-web: newrelic-admin run-program gunicorn flush:app -b 0.0.0.0:$PORT -w 3
+web: newrelic-admin run-program gunicorn flush:app -b 0.0.0.0:$PORT -w 10
