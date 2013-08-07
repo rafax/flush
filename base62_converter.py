@@ -20,12 +20,13 @@ UPPERCASE_OFFSET = 55
 LOWERCASE_OFFSET = 61
 DIGIT_OFFSET = 48
 
+
 def true_ord(char):
     """
     Turns a digit [char] in character representation
     from the number system with base [BASE] into an integer.
     """
-    
+
     if char.isdigit():
         return ord(char) - DIGIT_OFFSET
     elif 'A' <= char <= 'Z':
@@ -34,6 +35,7 @@ def true_ord(char):
         return ord(char) - LOWERCASE_OFFSET
     else:
         raise ValueError("%s is not a valid character" % char)
+
 
 def true_chr(integer):
     """
@@ -47,7 +49,8 @@ def true_chr(integer):
     elif 36 <= integer < 62:
         return chr(integer + LOWERCASE_OFFSET)
     else:
-        raise ValueError("%d is not a valid integer in the range of base %d" % (integer, BASE))
+        raise ValueError(
+            "%d is not a valid integer in the range of base %d" % (integer, BASE))
 
 
 def saturate(key):
@@ -66,12 +69,12 @@ def dehydrate(integer):
     Turn an integer [integer] into a base [BASE] number
     in string representation
     """
-    
+
     # we won't step into the while if integer is 0
     # so we just solve for that case here
     if integer == 0:
         return '0'
-    
+
     string = ""
     while integer > 0:
         remainder = integer % BASE
@@ -80,7 +83,7 @@ def dehydrate(integer):
     return string
 
 if __name__ == '__main__':
-    
+
     # not really unit tests just a rough check to see if anything is way off
     if sys.argv[1] == '-tests':
         passed_tests = True

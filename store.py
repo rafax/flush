@@ -7,7 +7,6 @@ _url = urlparse.urlparse(
     os.environ.get('REDISTOGO_URL', 'redis://127.0.0.1:6379'))
 
 
-
 class _EntitySetWrapper(object):
     """docstring for Urls"""
     def __init__(self, format):
@@ -18,7 +17,7 @@ class _EntitySetWrapper(object):
         return redis.get(self.format % key)
 
     def set(self, key, value):
-        return redis.set(self.format % key,value)
+        return redis.set(self.format % key, value)
 
     def incr(self, key):
         return redis.incr(self.format % key)
@@ -27,7 +26,7 @@ class _EntitySetWrapper(object):
         return redis.exists(self.format % key)
 
     def setnx(self, key, value):
-        return redis.setnx(self.format % key,value)
+        return redis.setnx(self.format % key, value)
 
 redis = redis.StrictRedis(
     host=_url.hostname, port=_url.port, db=0, password=_url.password)

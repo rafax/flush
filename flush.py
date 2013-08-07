@@ -1,16 +1,13 @@
 import os
-import cPickle
-import thread
-import copy
-import urlparse
 import json
 import re
 import datetime
-from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash,jsonify
-from base62_converter import saturate, dehydrate
+from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash
+from base62_converter import dehydrate
 from store import urls, visits, redis
 app = Flask(__name__)
-app.secret_key = os.environ.get('APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
+app.secret_key = os.environ.get(
+    'APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
 
 
 @app.route("/<uid>")
@@ -19,27 +16,28 @@ def get_url(uid):
     if url:
         cnt = visits.incr(uid)
         redis.set("v:%s:%s" % (uid, cnt),
-            json.dumps({
-                'values': request.values,
-                'headers': list(request.headers),
-                'url': request.url,
-                'method': request.method,
-                'date': datetime.datetime.now().isoformat(),
-                'ip': request.remote_addr
-                },
-                sort_keys=True, indent=4))
+                  json.dumps({
+                             'values': request.values,
+                             'headers': list(request.headers),
+                             'url': request.url,
+                             'method': request.method,
+                             'date': datetime.datetime.now().isoformat(),
+                             'ip': request.remote_addr
+                             },
+                             sort_keys=True, indent=4))
         fullurl = to_full(url)
         return redirect(fullurl)
     return "No such url %s !" % uid
+
 
 @app.route("/shorten", methods=['POST'])
 def shorten():
     proposed_name = request.form['proposed_name']
     url = request.form['url']
     if proposed_name:
-        if not urls.setnx(proposed_name,'PLACEHOLDER'):
-            flash('Cannot shorten to %s'%proposed_name)
-            return render_template('home.html', url= url,proposed_name= proposed_name )
+        if not urls.setnx(proposed_name, 'PLACEHOLDER'):
+            flash('Cannot shorten to %s' % proposed_name)
+            return render_template('home.html', url= url, proposed_name= proposed_name )
         uid = proposed_name
         redis.incr('count')
     else:
@@ -56,7 +54,8 @@ def info(uid):
         ret = "Url: %s visited %s times" % (url, visit_count)
         ret += "<br />"
         visit_keys = redis.keys("v:%s:*" % uid)
-        ret += "<br />".join(map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys))
+        ret += "<br />".join(
+            map(lambda k: json.dumps(json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys))
         return ret
     return "No such url %s !" % uid
 
@@ -67,7 +66,8 @@ def secret():
     urls = []
     for u in url_keys:
         url = redis.get(u)
-        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid': u.replace("url:",""), 'info_url': url_for('info', uid=u.replace("url:",""))})
+        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid': u.replace(
+            "url:", ""), 'info_url': url_for('info', uid=u.replace("url:", ""))})
     return render_template('secret.html', urls=urls)
 
 
