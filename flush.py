@@ -62,12 +62,15 @@ def info(uid):
 @app.route("/secret")
 def secret():
     url_keys = redis.keys('url:*')
-    urls = []
+    full_urls = []
+    pipe = redis.pipeline()
     for u in url_keys:
-        url = redis.get(u)
-        urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid': u.replace(
+        pipe.get(u)
+    urls = pipe.execute()
+    for u, url in zip(url_keys, urls):
+        full_urls.append({'key': u, 'url': url, 'full_url': to_full(url), 'uid': u.replace(
             "url:", ""), 'info_url': url_for('info', uid=u.replace("url:", ""))})
-    return render_template('secret.html', urls=urls)
+    return render_template('secret.html', urls=full_urls)
 
 
 @app.route('/favicon.ico')
