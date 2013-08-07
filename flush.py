@@ -43,8 +43,8 @@ def shorten():
     else:
         uid = dehydrate(redis.incr('count'))
     urls.set(uid, url)
-    return "Shortened to %s" % uid
-
+    flash("Shortened to %s" % uid)
+    return redirect(url_for('info',uid=uid))
 
 @app.route("/info/<uid>")
 def info(uid):
