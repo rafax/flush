@@ -53,9 +53,11 @@ def info(uid):
     if url:
         visit_count = visits.get(uid)
         visit_keys = redis.keys("v:%s:*" % uid)
-        visits_json = map(lambda k: json.dumps(
-            json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys)
-        return render_template('info.html', url=url, full_url=to_full(url), visit_count=visit_count, visits=visits_json)
+        pipe = redis.pipeline()
+        for k in visit_keys:
+            pipe.get(k)
+        values = pipe.execute()
+        return render_template('info.html', url=url, full_url=to_full(url), visit_count=visit_count, visits=values)
     return "No such url %s !" % uid
 
 
