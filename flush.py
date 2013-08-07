@@ -37,7 +37,7 @@ def shorten():
     if proposed_name:
         if not urls.setnx(proposed_name, 'PLACEHOLDER'):
             flash('Cannot shorten to %s' % proposed_name)
-            return render_template('home.html', url= url, proposed_name= proposed_name)
+            return render_template('home.html', url=url, proposed_name=proposed_name)
         uid = proposed_name
         redis.incr('count')
     else:
@@ -55,13 +55,13 @@ def info(uid):
         visit_keys = redis.keys("v:%s:*" % uid)
         visits_json = map(lambda k: json.dumps(
             json.loads(redis.get(k)), sort_keys=True, indent=4), visit_keys)
-        return render_template('info.html', url=url,full_url=to_full(url), visit_count=visit_count, visits = visits_json)
+        return render_template('info.html', url=url, full_url=to_full(url), visit_count=visit_count, visits=visits_json)
     return "No such url %s !" % uid
 
 
 @app.route("/secret")
 def secret():
-    url_keys = sorted(redis.keys('url:*'))
+    url_keys = redis.keys('url:*')
     urls = []
     for u in url_keys:
         url = redis.get(u)
