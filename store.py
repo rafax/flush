@@ -28,6 +28,15 @@ class _EntitySetWrapper(object):
     def setnx(self, key, value):
         return redis.setnx(self.format % key, value)
 
+    def keys(self, filter='*'):
+        return redis.keys(self.format % 'filter')
+
+    def fetch_all(self, keys):
+        pipe = redis.pipeline()
+        for k in keys:
+            pipe.get(k)
+        return pipe.execute()
+
 redis = redis.StrictRedis(
     host=_url.hostname, port=_url.port, db=0, password=_url.password)
 urls = _EntitySetWrapper("url:%s")
