@@ -31,3 +31,8 @@ flush/*
 *.db
 venv
 *.pyc
+
+#Venv
+.Python
+include/
+lib/
