@@ -29,7 +29,7 @@ class _EntitySetWrapper(object):
         return redis.setnx(self.format % key, value)
 
     def keys(self, filter='*'):
-        return redis.keys(self.format % 'filter')
+        return redis.keys(self.format % filter)
 
     def fetch_all(self, keys):
         pipe = redis.pipeline()
