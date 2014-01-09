@@ -4,7 +4,7 @@ import re
 import datetime
 from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash
 from base62_converter import dehydrate
-from store import urls, visits
+from store import urls, visits, stats
 app = Flask(__name__)
 app.secret_key = os.environ.get(
     'APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
@@ -15,6 +15,7 @@ def get_url(uid):
     url = urls.get(uid)
     if url:
         cnt = visits.incr(uid)
+        stats.incr('visits')
         visits.set("%s:%s" % (uid, cnt),
                    json.dumps({
                               'values': request.values,
@@ -39,9 +40,9 @@ def shorten():
             flash('Cannot shorten to %s' % proposed_name)
             return render_template('home.html', url=url, proposed_name=proposed_name)
         uid = proposed_name
-        urls.incr('count')
+        stats.incr('count')
     else:
-        uid = dehydrate(urls.incr('count'))
+        uid = dehydrate(stats.incr('count'))
     urls.set(uid, url)
     flash("Shortened to %s" % uid)
     return redirect(url_for('info', uid=uid))
