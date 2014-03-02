@@ -32,24 +32,23 @@ celery = make_celery(app)
 def get_url(uid):
     url = urls.get(uid)
     if url:
-        store_view.delay(uid,url,request)
-        fullurl = to_full(url)
-        return redirect(fullurl)
-    return "No such url %s !" % uid
-
-@celery.task()
-def store_view(uid, url, request):
-    cnt = visits.incr(uid)
-    stats.incr('visits')
-    visit_data = json.dumps({
+        store_view.delay(uid,url,{
                               'values': request.values,
                               'headers': list(request.headers),
                               'url': request.url,
                               'method': request.method,
                               'date': datetime.datetime.now().isoformat(),
                               'ip': request.remote_addr
-                              },
-                              sort_keys=True, indent=4)
+                              })
+        fullurl = to_full(url)
+        return redirect(fullurl)
+    return "No such url %s !" % uid
+
+@celery.task()
+def store_view(uid, url, request_data):
+    cnt = visits.incr(uid)
+    stats.incr('visits')
+    visit_data = json.dumps(request_data, sort_keys=True, indent=4)
     visits.set("%s:%s" % (uid, cnt),visit_data)
 
 @app.route("/shorten", methods=['POST'])
