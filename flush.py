@@ -2,54 +2,34 @@ import os
 import json
 import re
 import datetime
-from celery import Celery
 from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash
 from base62_converter import dehydrate
 from store import urls, visits, stats
 app = Flask(__name__)
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
 app.secret_key = os.environ.get(
     'APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
 
-def make_celery(app):
-    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-    class ContextTask(TaskBase):
-        abstract = True
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-    celery.Task = ContextTask
-    return celery
-
-celery = make_celery(app)
 
 @app.route("/<uid>")
 def get_url(uid):
     url = urls.get(uid)
     if url:
-        store_view.delay(uid,url,{
+        cnt = visits.incr(uid)
+        stats.incr('visits')
+        visits.set("%s:%s" % (uid, cnt),
+                   json.dumps({
                               'values': request.values,
                               'headers': list(request.headers),
                               'url': request.url,
                               'method': request.method,
                               'date': datetime.datetime.now().isoformat(),
                               'ip': request.remote_addr
-                              })
+                              },
+                              sort_keys=True, indent=4))
         fullurl = to_full(url)
         return redirect(fullurl)
     return "No such url %s !" % uid
 
-@celery.task()
-def store_view(uid, url, request_data):
-    cnt = visits.incr(uid)
-    stats.incr('visits')
-    visit_data = json.dumps(request_data, sort_keys=True, indent=4)
-    visits.set("%s:%s" % (uid, cnt),visit_data)
 
 @app.route("/shorten", methods=['POST'])
 def shorten():

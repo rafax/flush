@@ -5,4 +5,3 @@ gunicorn==0.14.6
 redis==2.6.2
 wsgiref==0.1.2
 newrelic
-celery
