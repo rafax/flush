@@ -2,7 +2,7 @@ import os
 import json
 import re
 import datetime
-from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash
+from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash, abort
 from base62_converter import dehydrate
 from store import urls, visits, stats
 app = Flask(__name__)
@@ -11,6 +11,20 @@ app.secret_key = os.environ.get(
 
 
 @app.route("/<uid>")
+def redirect_to_url(uid):
+    found, url = get_url(uid)
+    if not found:
+        return abort(404)
+    return redirect(url)
+
+
+@app.route("/benchmark/<uid>")
+def return_url(uid):
+    found, url = get_url(uid)
+    if not found:
+        return abort(404)
+    return url
+
 def get_url(uid):
     url = urls.get(uid)
     if url:
@@ -27,9 +41,8 @@ def get_url(uid):
                               },
                               sort_keys=True, indent=4))
         fullurl = to_full(url)
-        return redirect(fullurl)
-    return "No such url %s !" % uid
-
+        return (True,fullurl)
+    return (False,"No such url %s !" % uid)
 
 @app.route("/shorten", methods=['POST'])
 def shorten():
