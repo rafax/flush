@@ -38,8 +38,7 @@ def get_url(uid):
                               'method': request.method,
                               'date': datetime.datetime.now().isoformat(),
                               'ip': request.remote_addr
-                              },
-                              sort_keys=True, indent=4))
+                              }))
         fullurl = to_full(url)
         return (True,fullurl)
     return (False,"No such url %s !" % uid)
