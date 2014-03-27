@@ -12,8 +12,8 @@ app.secret_key = os.environ.get(
 
 @app.route("/<uid>")
 def redirect_to_url(uid):
-    found, url = get_url(uid)
-    if not found:
+    url = get_url(uid)
+    if not url:
         return abort(404)
     return redirect(url)
 
@@ -27,21 +27,21 @@ def return_url(uid):
 
 def get_url(uid):
     url = urls.get(uid)
-    if url:
-        cnt = visits.incr(uid)
-        stats.incr('visits')
-        visits.set("%s:%s" % (uid, cnt),
-                   json.dumps({
-                              'values': request.values,
-                              'headers': list(request.headers),
-                              'url': request.url,
-                              'method': request.method,
-                              'date': datetime.datetime.now().isoformat(),
-                              'ip': request.remote_addr
-                              }))
-        fullurl = to_full(url)
-        return (True,fullurl)
-    return (False,"No such url %s !" % uid)
+    if not url:
+        return None
+    cnt = visits.incr(uid)
+    stats.incr('visits')
+    visits.set("%s:%s" % (uid, cnt),
+               json.dumps({
+                          'values': request.values,
+                          'headers': list(request.headers),
+                          'url': request.url,
+                          'method': request.method,
+                          'date': datetime.datetime.now().isoformat(),
+                          'ip': request.remote_addr
+                          }))
+    fullurl = to_full(url)
+    return fullurl
 
 @app.route("/shorten", methods=['POST'])
 def shorten():
