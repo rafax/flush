@@ -5,6 +5,7 @@ import datetime
 from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash, abort
 from base62_converter import dehydrate
 from store import urls, visits, stats
+from db import db
 app = Flask(__name__)
 app.secret_key = os.environ.get(
     'APP_SECRET', '\x08/\x176\xcb\x8b\x0f\xa4g\x0b\xff\xb3{\xefP\xd6\x85>\x97\xf4X\xce\xcb\xc1')
