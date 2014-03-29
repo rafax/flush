@@ -1,16 +1,19 @@
 import os
 import urlparse
+import json
+import re
 
 import redis
 
 from base62_converter import dehydrate
 
-
 class FlushDb():
 
     urls = "url:%s"
-    url_count = "stats:url_count"
     visits = "url:%s:v"
+
+    url_count = "stats:url_count"
+    visit_count = "stats:visit_count"
 
     redis_url = urlparse.urlparse(
         os.environ.get('REDISTOGO_URL', 'redis://127.0.0.1:6379'))
@@ -29,5 +32,12 @@ class FlushDb():
         self.r.set(self.urls % uid, url)
         return uid
 
+    def url_visited(self, uid, visit_data):
+        url = self.r.get(self.urls % uid)
+        if not url:
+            return None
+        self.r.rpush(self.visits % uid, json.dumps(visit_data))
+        self.r.incr(self.visit_count)
+        return url
 
 db = FlushDb()

@@ -1,9 +1,8 @@
 import os
-import json
-import re
 import datetime
+import re
 from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash, abort
-from store import urls, visits, stats
+from store import urls, visits
 from db import db
 app = Flask(__name__)
 app.secret_key = os.environ.get(
@@ -12,37 +11,29 @@ app.secret_key = os.environ.get(
 
 @app.route("/<uid>")
 def redirect_to_url(uid):
-    url = get_url(uid)
-    if not url:
-        return abort(404)
-    return redirect(url)
+    full_url = url_visited(uid)
+    return redirect(full_url)
 
 
 @app.route("/benchmark/<uid>")
 def return_url(uid):
-    found, url = get_url(uid)
-    if not found:
-        return abort(404)
-    return url
+    full_url = get_url(uid)
+    return full_url
 
 
-def get_url(uid):
-    url = urls.get(uid)
+def url_visited(uid):
+    visit_data = {
+        'values': request.values,
+        'headers': list(request.headers),
+        'url': request.url,
+        'method': request.method,
+        'date': datetime.datetime.now().isoformat(),
+        'ip': request.remote_addr
+    }
+    url = db.url_visited(uid, visit_data)
     if not url:
-        return None
-    cnt = visits.incr(uid)
-    stats.incr('visits')
-    visits.set("%s:%s" % (uid, cnt),
-               json.dumps({
-                          'values': request.values,
-                          'headers': list(request.headers),
-                          'url': request.url,
-                          'method': request.method,
-                          'date': datetime.datetime.now().isoformat(),
-                          'ip': request.remote_addr
-                          }))
-    fullurl = to_full(url)
-    return fullurl
+        return abort(404)
+    return to_full(url)
 
 
 @app.route("/shorten", methods=['POST'])
@@ -87,8 +78,8 @@ def favicon():
 
 
 @app.route('/')
-def home(url, proposed_name):
-    return render_template('home.html', url=url, proposed_name=proposed_name)
+def home():
+    return render_template('home.html')
 
 
 @app.route('/mu-ec2f18e2-3a51503c-b31d1c19-e0f57a1a')
