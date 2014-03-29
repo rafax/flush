@@ -3,6 +3,7 @@ import urlparse
 
 import redis
 
+
 _url = urlparse.urlparse(
     os.environ.get('REDISTOGO_URL', 'redis://127.0.0.1:6379'))
 

@@ -3,7 +3,6 @@ import json
 import re
 import datetime
 from flask import Flask, send_from_directory, redirect, request, render_template, url_for, flash, abort
-from base62_converter import dehydrate
 from store import urls, visits, stats
 from db import db
 app = Flask(__name__)
@@ -26,6 +25,7 @@ def return_url(uid):
         return abort(404)
     return url
 
+
 def get_url(uid):
     url = urls.get(uid)
     if not url:
@@ -44,19 +44,15 @@ def get_url(uid):
     fullurl = to_full(url)
     return fullurl
 
+
 @app.route("/shorten", methods=['POST'])
 def shorten():
     proposed_name = request.form['proposed_name']
     url = request.form['url']
-    if proposed_name:
-        if not urls.setnx(proposed_name, 'PLACEHOLDER'):
-            flash('Cannot shorten to %s' % proposed_name)
-            return render_template('home.html', url=url, proposed_name=proposed_name)
-        uid = proposed_name
-        stats.incr('count')
-    else:
-        uid = dehydrate(stats.incr('count'))
-    urls.set(uid, url)
+    uid = db.shorten_url(url, proposed_name)
+    if not uid:
+        flash('Cannot shorten to %s' % proposed_name)
+        return render_template('home.html', url=url, proposed_name=proposed_name)
     flash("Shortened to %s" % uid)
     return redirect(url_for('info', uid=uid))
 
@@ -91,8 +87,8 @@ def favicon():
 
 
 @app.route('/')
-def home():
-    return render_template('home.html')
+def home(url, proposed_name):
+    return render_template('home.html', url=url, proposed_name=proposed_name)
 
 
 @app.route('/mu-ec2f18e2-3a51503c-b31d1c19-e0f57a1a')
