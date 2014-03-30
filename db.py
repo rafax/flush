@@ -1,16 +1,16 @@
 import os
 import urlparse
 import json
-import re
 
 import redis
 
 from base62_converter import dehydrate
 
+
 class FlushDb():
 
-    urls = "url:%s"
-    visits = "url:%s:v"
+    urls = "u:%s"
+    visits = "v:%s"
 
     url_count = "stats:url_count"
     visit_count = "stats:visit_count"
@@ -19,7 +19,10 @@ class FlushDb():
         os.environ.get('REDISTOGO_URL', 'redis://127.0.0.1:6379'))
 
     r = redis.StrictRedis(
-        host=redis_url.hostname, port=redis_url.port, db=0, password=redis_url.password)
+        host=redis_url.hostname,
+        port=redis_url.port,
+        db=0,
+        password=redis_url.password)
 
     def shorten_url(self, url, proposed_name):
         if proposed_name:
@@ -39,5 +42,26 @@ class FlushDb():
         self.r.rpush(self.visits % uid, json.dumps(visit_data))
         self.r.incr(self.visit_count)
         return url
+
+    def get_url(self, uid):
+        return self.r.get(self.urls % uid)
+
+    def url_visits(self, uid):
+        return self.r.lrange(self.visits % uid, 0, -1)
+
+    def all_urls(self):
+        url_keys = self.r.keys(self.urls % '*')
+        url_values = self.__fetch_all(url_keys)
+        urls = {}
+        for key, value in zip(url_keys, url_values):
+            urls[key.replace("u:", "")] = value
+        return urls
+
+    def __fetch_all(self, keys):
+        pipe = self.r.pipeline()
+        for k in keys:
+            pipe.get(k)
+        return pipe.execute()
+
 
 db = FlushDb()
