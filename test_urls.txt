@@ -3,3 +3,9 @@ http://localhost:5000/benchmark/2
 http://localhost:5000/benchmark/3
 http://localhost:5000/benchmark/4
 http://localhost:5000/benchmark/5
+http://localhost:5000/secret
+http://localhost:5000/info/1
+http://localhost:5000/info/2
+http://localhost:5000/info/3
+http://localhost:5000/info/4
+http://localhost:5000/info/5
